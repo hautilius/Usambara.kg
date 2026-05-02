@@ -10,23 +10,122 @@
     :root { --primary-color: #e91e63; --light-bg: #fdf7f9; --dark-text: #333; }
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
     body { background-color: var(--light-bg); padding: 20px; }
-    .admin-container { max-width: 900px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+
+    .admin-container {
+      max-width: 960px; margin: 0 auto; background: #fff;
+      padding: 30px; border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    }
     .admin-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
     .back-link { text-decoration: none; color: var(--dark-text); font-weight: 600; transition: 0.3s; }
     .back-link:hover { color: var(--primary-color); }
     .logout-btn { background: none; border: none; color: #888; cursor: pointer; font-size: 0.9rem; }
     .logout-btn:hover { color: var(--primary-color); }
     h1 { color: var(--primary-color); margin-bottom: 25px; text-align: center; }
-    .product-form { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 40px; background: #f9f9f9; padding: 20px; border-radius: 15px; }
-    .product-form input, .product-form select { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; }
-    .product-form button { grid-column: span 2; background: var(--primary-color); color: #fff; border: none; padding: 15px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-    .product-form button:disabled { background: #ccc; cursor: not-allowed; }
+
+    /* ─── ADD FORM ─── */
+    .product-form {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 15px; margin-bottom: 40px;
+      background: #f9f9f9; padding: 20px; border-radius: 15px;
+    }
+    .product-form input,
+    .product-form select { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; }
+
+    /* multi-image block spans full width */
+    .img-block { grid-column: span 2; }
+    .img-block label { font-size: 0.85rem; color: #888; display: block; margin-bottom: 6px; font-weight: 600; }
+    .img-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
+    .img-row input { flex: 1; padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.95rem; }
+    .img-row .remove-img-btn {
+      background: none; border: none; color: #ccc; cursor: pointer;
+      font-size: 1.1rem; padding: 4px 8px; transition: 0.2s;
+    }
+    .img-row .remove-img-btn:hover { color: #ff4d4d; }
+    .add-img-btn {
+      background: none; border: 1px dashed #e91e63; color: #e91e63;
+      padding: 8px 16px; border-radius: 8px; cursor: pointer;
+      font-size: 0.9rem; transition: 0.2s; width: 100%;
+    }
+    .add-img-btn:hover { background: #fdf7f9; }
+
+    .product-form > button[type="submit"] {
+      grid-column: span 2; background: var(--primary-color); color: #fff;
+      border: none; padding: 15px; border-radius: 8px;
+      font-weight: bold; cursor: pointer; transition: 0.3s;
+    }
+    .product-form > button[type="submit"]:disabled { background: #ccc; cursor: not-allowed; }
+
+    /* ─── TABLE ─── */
     table { width: 100%; border-collapse: collapse; margin-top: 20px; }
     th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
     th { background: var(--light-bg); color: var(--primary-color); }
     .preview-img { width: 50px; height: 50px; object-fit: cover; border-radius: 5px; }
-    .delete-btn { color: #ff4d4d; cursor: pointer; border: none; background: none; font-size: 1.1rem; }
-    @media (max-width: 600px) { .product-form { grid-template-columns: 1fr; } .product-form button { grid-column: span 1; } }
+
+    .action-btns { display: flex; gap: 8px; }
+    .edit-btn {
+      color: #4a90e2; cursor: pointer; border: none; background: none;
+      font-size: 1.05rem; padding: 4px 6px; border-radius: 6px; transition: 0.2s;
+    }
+    .edit-btn:hover { background: #eaf3ff; }
+    .delete-btn {
+      color: #ff4d4d; cursor: pointer; border: none; background: none;
+      font-size: 1.05rem; padding: 4px 6px; border-radius: 6px; transition: 0.2s;
+    }
+    .delete-btn:hover { background: #fff0f0; }
+
+    /* ─── MODAL ─── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.45); z-index: 1000;
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: #fff; border-radius: 20px; padding: 30px;
+      width: 100%; max-width: 520px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      animation: slideUp 0.25s ease;
+      max-height: 90vh; overflow-y: auto;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(30px); opacity: 0; }
+      to   { transform: translateY(0);    opacity: 1; }
+    }
+
+    .modal h2 { color: var(--primary-color); margin-bottom: 20px; }
+    .modal-field { margin-bottom: 14px; }
+    .modal-field label { display: block; font-size: 0.85rem; color: #888; font-weight: 600; margin-bottom: 5px; }
+    .modal-field input, .modal-field select {
+      width: 100%; padding: 11px 14px;
+      border: 1px solid #ddd; border-radius: 8px; font-size: 1rem;
+    }
+    .modal-field input:focus, .modal-field select:focus {
+      outline: none; border-color: var(--primary-color);
+    }
+
+    .modal-imgs-label { font-size: 0.85rem; color: #888; font-weight: 600; margin-bottom: 6px; display: block; }
+
+    .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+    .btn-save {
+      flex: 1; background: var(--primary-color); color: #fff;
+      border: none; padding: 13px; border-radius: 8px;
+      font-weight: bold; cursor: pointer; transition: 0.3s;
+    }
+    .btn-save:hover { background: #d81b60; }
+    .btn-cancel {
+      flex: 1; background: #f0f0f0; color: #555;
+      border: none; padding: 13px; border-radius: 8px;
+      font-weight: bold; cursor: pointer; transition: 0.3s;
+    }
+    .btn-cancel:hover { background: #e5e5e5; }
+
+    @media (max-width: 600px) {
+      .product-form { grid-template-columns: 1fr; }
+      .product-form > button[type="submit"],
+      .img-block { grid-column: span 1; }
+    }
   </style>
 </head>
 <body>
@@ -36,13 +135,14 @@
     <a href="index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> На главную</a>
     <button onclick="logout()" class="logout-btn">Выйти <i class="fa-solid fa-right-from-bracket"></i></button>
   </div>
-  
-  <h1>Управление товарами (Cloud)</h1>
 
+  <h1>Управление товарами</h1>
+
+  <!-- ─── ADD FORM ─── -->
   <form class="product-form" id="add-form">
     <input type="text" id="name" placeholder="Название товара" required>
     <input type="number" id="price" placeholder="Цена (сом)" required>
-    <input type="text" id="img" placeholder="Ссылка на фото (URL)" required>
+
     <select id="category" onchange="toggleSubGroup()" required>
       <option value="flowers">Цветы</option>
       <option value="fertilizers">Удобрения</option>
@@ -55,6 +155,21 @@
       <option value="leaf-cut">Лист срезом</option>
       <option value="leaf-root">Укоренённый лист</option>
     </select>
+
+    <!-- Multi-image block -->
+    <div class="img-block">
+      <label><i class="fa-solid fa-images"></i> Ссылки на фото</label>
+      <div id="img-list">
+        <div class="img-row">
+          <input type="url" placeholder="https://... (главное фото)" class="img-input">
+          <button type="button" class="remove-img-btn" onclick="removeImgRow(this)" title="Удалить"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+      </div>
+      <button type="button" class="add-img-btn" onclick="addImgRow('img-list')">
+        <i class="fa-solid fa-plus"></i> Добавить ещё фото
+      </button>
+    </div>
+
     <button type="submit" id="submit-btn"><i class="fa-solid fa-plus"></i> Добавить товар</button>
   </form>
 
@@ -65,6 +180,7 @@
         <th>Название</th>
         <th>Категория</th>
         <th>Цена</th>
+        <th>Фото</th>
         <th>Действие</th>
       </tr>
     </thead>
@@ -72,36 +188,72 @@
   </table>
 </div>
 
+<!-- ─── EDIT MODAL ─── -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal">
+    <h2><i class="fa-solid fa-pen-to-square"></i> Редактировать товар</h2>
+
+    <div class="modal-field">
+      <label>Название</label>
+      <input type="text" id="edit-name" placeholder="Название товара">
+    </div>
+    <div class="modal-field">
+      <label>Цена (сом)</label>
+      <input type="number" id="edit-price" placeholder="Цена">
+    </div>
+    <div class="modal-field">
+      <label>Категория</label>
+      <select id="edit-category" onchange="toggleEditSubGroup()">
+        <option value="flowers">Цветы</option>
+        <option value="fertilizers">Удобрения</option>
+        <option value="pots">Горшки</option>
+      </select>
+    </div>
+    <div class="modal-field" id="edit-subgroup-field">
+      <label>Тип</label>
+      <select id="edit-subgroup">
+        <option value="">Без подгруппы</option>
+        <option value="baby">Детка</option>
+        <option value="adult">Взрослое растение</option>
+        <option value="leaf-cut">Лист срезом</option>
+        <option value="leaf-root">Укоренённый лист</option>
+      </select>
+    </div>
+
+    <div class="modal-field">
+      <span class="modal-imgs-label"><i class="fa-solid fa-images"></i> Ссылки на фото</span>
+      <div id="edit-img-list"></div>
+      <button type="button" class="add-img-btn" onclick="addImgRow('edit-img-list')">
+        <i class="fa-solid fa-plus"></i> Добавить ещё фото
+      </button>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Отмена</button>
+      <button class="btn-save" onclick="saveEdit()"><i class="fa-solid fa-floppy-disk"></i> Сохранить</button>
+    </div>
+  </div>
+</div>
+
 <script>
   const supabaseUrl = 'https://nfdrkjisgkhkwkscjpkv.supabase.co';
   const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5mZHJramlzZ2toa3drc2NqcGt2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MTI0MzcsImV4cCI6MjA5MzI4ODQzN30.Gfg_F7RRrrdGqxKHNqn-CaWZcM9EAqpRWCdtx5fTXt4';
   const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-  // ИСПРАВЛЕНИЕ СЕССИИ: проверяем и isAdmin, и срок действия (30 дней)
-  const SESSION_DURATION_MS = 30 * 24 * 60 * 60 * 1000; // 30 дней в миллисекундах
-
+  const SESSION_DURATION_MS = 30 * 24 * 60 * 60 * 1000;
   function checkSession() {
     const isAdmin = localStorage.getItem('isAdmin');
     const loginTime = parseInt(localStorage.getItem('adminLoginTime') || '0');
-    const now = Date.now();
-
-    if (isAdmin !== 'true' || (now - loginTime) > SESSION_DURATION_MS) {
-      // Сессия истекла или не существует — очищаем и редиректим
+    if (isAdmin !== 'true' || (Date.now() - loginTime) > SESSION_DURATION_MS) {
       localStorage.removeItem('isAdmin');
       localStorage.removeItem('adminLoginTime');
       window.location.href = 'login.html';
       return false;
     }
-
-    // Обновляем время последней активности (продлеваем сессию)
-    localStorage.setItem('adminLoginTime', now.toString());
+    localStorage.setItem('adminLoginTime', Date.now().toString());
     return true;
   }
-
-  // Проверяем сессию при загрузке
-  if (!checkSession()) {
-    throw new Error('Not authenticated');
-  }
+  if (!checkSession()) throw new Error('Not authenticated');
 
   function logout() {
     localStorage.removeItem('isAdmin');
@@ -109,80 +261,213 @@
     window.location.href = 'index.html';
   }
 
-  let products = [];
+  /* ─── HELPER: parse images field → array ─── */
+  function parseImgs(raw) {
+    if (!raw) return [''];
+    if (typeof raw === 'string') {
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed.filter(Boolean);
+      } catch {}
+      return [raw];
+    }
+    if (Array.isArray(raw)) return raw.filter(Boolean);
+    return [''];
+  }
 
+  /* ─── DYNAMIC IMG ROWS ─── */
+  function addImgRow(containerId, value = '') {
+    const container = document.getElementById(containerId);
+    const row = document.createElement('div');
+    row.className = 'img-row';
+    const input = document.createElement('input');
+    input.type = 'url';
+    input.placeholder = 'https://...';
+    input.className = 'img-input';
+    input.value = value;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'remove-img-btn';
+    btn.title = 'Удалить';
+    btn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+    btn.onclick = () => removeImgRow(btn);
+    row.appendChild(input);
+    row.appendChild(btn);
+    container.appendChild(row);
+  }
+
+  function removeImgRow(btn) {
+    const container = btn.closest('[id$="img-list"]');
+    const rows = container.querySelectorAll('.img-row');
+    if (rows.length > 1) btn.closest('.img-row').remove();
+    else btn.closest('.img-row').querySelector('input').value = '';
+  }
+
+  function getImgValues(containerId) {
+    return Array.from(document.querySelectorAll(`#${containerId} .img-input`))
+      .map(i => i.value.trim()).filter(Boolean);
+  }
+
+  /* ─── SUBGROUP TOGGLE ─── */
   function toggleSubGroup() {
     const cat = document.getElementById('category').value;
     document.getElementById('subgroup').style.display = (cat === 'flowers') ? 'block' : 'none';
   }
+  function toggleEditSubGroup() {
+    const cat = document.getElementById('edit-category').value;
+    document.getElementById('edit-subgroup-field').style.display = (cat === 'flowers') ? 'block' : 'none';
+  }
+
+  /* ─── LOAD & RENDER ─── */
+  let products = [];
 
   async function loadProducts() {
     const { data, error } = await _supabase
-      .from('products')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Ошибка загрузки:', error);
-    } else {
-      products = data;
-      renderAdminTable();
-    }
+      .from('products').select('*').order('created_at', { ascending: false });
+    if (error) { console.error('Ошибка загрузки:', error); }
+    else { products = data; renderAdminTable(); }
   }
 
+  function renderAdminTable() {
+    const list = document.getElementById('product-list');
+    list.innerHTML = '';
+    products.forEach(item => {
+      const imgs = parseImgs(item.img);
+      const firstImg = imgs[0] || '';
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><img src="${firstImg}" class="preview-img"
+            onerror="this.src='https://via.placeholder.com/50?text=?'"></td>
+        <td>${item.name}${item.sub ? ' (' + item.sub + ')' : ''}</td>
+        <td>${item.category}</td>
+        <td>${item.price} сом</td>
+        <td style="color:#888; font-size:0.85rem;">${imgs.length} шт.</td>
+        <td>
+          <div class="action-btns">
+            <button class="edit-btn" title="Редактировать" data-id="${item.id}">
+              <i class="fa-solid fa-pen"></i>
+            </button>
+            <button class="delete-btn" title="Удалить" data-id="${item.id}">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
+        </td>`;
+      tr.querySelector('.edit-btn').addEventListener('click', () => openEdit(item.id));
+      tr.querySelector('.delete-btn').addEventListener('click', () => deleteProduct(item.id));
+      list.appendChild(tr);
+    });
+  }
+
+  /* ─── ADD PRODUCT ─── */
   document.getElementById('add-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = document.getElementById('submit-btn');
     btn.disabled = true;
 
+    const imgs = getImgValues('img-list');
+    const imgValue = imgs.length === 1 ? imgs[0] : JSON.stringify(imgs);
+
     const newProduct = {
-      name: document.getElementById('name').value.trim(),
-      price: parseInt(document.getElementById('price').value),
-      img: document.getElementById('img').value.trim(),
+      name:     document.getElementById('name').value.trim(),
+      price:    parseInt(document.getElementById('price').value),
+      img:      imgValue,
       category: document.getElementById('category').value,
-      sub: document.getElementById('subgroup').value
+      sub:      document.getElementById('subgroup').value
     };
 
     const { error } = await _supabase.from('products').insert([newProduct]);
-
-    if (error) {
-      alert('Ошибка сохранения: ' + error.message);
-    } else {
+    if (error) { alert('Ошибка сохранения: ' + error.message); }
+    else {
       e.target.reset();
+      // Reset img rows
+      document.getElementById('img-list').innerHTML = '';
+      addImgRow('img-list');
       toggleSubGroup();
       await loadProducts();
     }
     btn.disabled = false;
   });
 
-  function renderAdminTable() {
-    const list = document.getElementById('product-list');
-    list.innerHTML = products.map(item => `
-      <tr>
-        <td><img src="${item.img}" class="preview-img" onerror="this.src='https://via.placeholder.com/50?text=?'"></td>
-        <td>${item.name}${item.sub ? ' (' + item.sub + ')' : ''}</td>
-        <td>${item.category}</td>
-        <td>${item.price} сом</td>
-        <td>
-          <button class="delete-btn" onclick="deleteProduct(${item.id})">
-            <i class="fa-solid fa-trash"></i>
-          </button>
-        </td>
-      </tr>`).join('');
-  }
-
+  /* ─── DELETE ─── */
   async function deleteProduct(id) {
     if (confirm('Удалить товар навсегда?')) {
       const { error } = await _supabase.from('products').delete().eq('id', id);
-      if (error) {
-        alert('Ошибка удаления: ' + error.message);
-      } else {
-        await loadProducts();
-      }
+      if (error) alert('Ошибка удаления: ' + error.message);
+      else await loadProducts();
     }
   }
 
+  /* ─── EDIT MODAL ─── */
+  let editingId = null;
+
+  function openEdit(id) {
+    const item = products.find(p => p.id === id);
+    if (!item) return;
+    editingId = id;
+
+    document.getElementById('edit-name').value     = item.name;
+    document.getElementById('edit-price').value    = item.price;
+    document.getElementById('edit-category').value = item.category;
+    document.getElementById('edit-subgroup').value = item.sub || '';
+
+    toggleEditSubGroup();
+
+    // Populate image rows
+    const imgContainer = document.getElementById('edit-img-list');
+    imgContainer.innerHTML = '';
+    const imgs = parseImgs(item.img);
+    imgs.forEach(url => addImgRow('edit-img-list', url));
+    if (imgs.length === 0) addImgRow('edit-img-list');
+
+    document.getElementById('edit-modal').classList.add('open');
+  }
+
+  function closeModal() {
+    document.getElementById('edit-modal').classList.remove('open');
+    editingId = null;
+  }
+
+  // Close modal on overlay click
+  document.getElementById('edit-modal').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeModal();
+  });
+
+  async function saveEdit() {
+    if (!editingId) return;
+
+    const imgs = getImgValues('edit-img-list');
+    if (imgs.length === 0) { alert('Добавьте хотя бы одно фото!'); return; }
+    const imgValue = imgs.length === 1 ? imgs[0] : JSON.stringify(imgs);
+
+    const updates = {
+      name:     document.getElementById('edit-name').value.trim(),
+      price:    parseInt(document.getElementById('edit-price').value),
+      category: document.getElementById('edit-category').value,
+      sub:      document.getElementById('edit-subgroup').value,
+      img:      imgValue
+    };
+
+    if (!updates.name) { alert('Введите название товара!'); return; }
+
+    const saveBtn = document.querySelector('.btn-save');
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Сохранение...';
+
+    const { error } = await _supabase.from('products').update(updates).eq('id', editingId);
+    if (error) {
+      alert('Ошибка сохранения: ' + error.message);
+    } else {
+      closeModal();
+      await loadProducts();
+    }
+    saveBtn.disabled = false;
+    saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Сохранить';
+  }
+
+  /* ─── INIT ─── */
   toggleSubGroup();
+  // Ensure first img row exists
+  if (document.getElementById('img-list').children.length === 0) addImgRow('img-list');
   loadProducts();
 </script>
 
