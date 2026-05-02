@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Каталог — Usambara.kg</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #e91e63;
+      --light-bg: #fdf7f9;
+      --dark-text: #333;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+    body { background-color: var(--light-bg); color: var(--dark-text); padding-top: 90px; }
+
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+
+    header {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10px);
+      height: 70px; display: flex; align-items: center; position: fixed;
+      width: 100%; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    nav { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+    .logo { font-size: 1.5rem; font-weight: 800; color: var(--primary-color); text-decoration: none; }
+    .nav-links { display: flex; list-style: none; gap: 30px; align-items: center; }
+    .nav-links a { text-decoration: none; color: var(--dark-text); font-weight: 500; transition: 0.3s; }
+    .nav-links a:hover { color: var(--primary-color); }
+
+    .cart-link { position: relative; font-size: 1.3rem; color: var(--primary-color); }
+    #cart-count {
+      position: absolute; top: -10px; right: -12px;
+      background: var(--primary-color); color: #fff;
+      font-size: 0.7rem; padding: 2px 6px; border-radius: 50%;
+    }
+
+    .burger { display: none; cursor: pointer; font-size: 1.8rem; color: var(--primary-color); }
+
+    .controls-section { text-align: center; margin-bottom: 40px; padding-top: 20px; }
+    .search-container { max-width: 500px; margin: 0 auto 20px; position: relative; }
+    .search-container input {
+      width: 100%; padding: 12px 20px 12px 45px; border: 2px solid #ddd;
+      border-radius: 50px; outline: none; transition: 0.3s; font-size: 1rem;
+    }
+    .search-container input:focus { border-color: var(--primary-color); }
+    .search-container i { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: #888; }
+
+    .filter-btn, .sub-filter-btn {
+      padding: 10px 20px; margin: 5px; border: 1px solid var(--primary-color);
+      background: none; color: var(--primary-color); border-radius: 50px;
+      cursor: pointer; font-weight: 600; transition: 0.3s;
+    }
+    .filter-btn.active, .sub-filter-btn.active { background: var(--primary-color); color: #fff; }
+
+    #sub-filters-container {
+      margin-top: 15px; padding: 10px; background: #fff; border-radius: 15px;
+      display: none; animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px; }
+    .product-card { background: #fff; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.05); transition: 0.3s; }
+    .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(233,30,99,0.15); }
+    .product-img { width: 100%; height: 250px; object-fit: cover; background: #eee; }
+    .product-info { padding: 20px; text-align: center; }
+    .price { display: block; font-size: 1.4rem; color: var(--primary-color); font-weight: bold; margin: 10px 0; }
+    .btn-add { width: 100%; background: var(--primary-color); color: #fff; border: none; padding: 12px; border-radius: 50px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+    .btn-add.clicked { background-color: #4caf50; transform: scale(0.95); }
+
+    footer { background: #333; color: #fff; padding: 60px 0 20px; margin-top: 60px; text-align: center; }
+
+    @media (max-width: 768px) {
+      .burger { display: block; }
+      .nav-links {
+        position: fixed; right: -100%; top: 70px;
+        flex-direction: column; background: #fff;
+        width: 100%; height: calc(100vh - 70px);
+        padding-top: 40px; transition: 0.4s;
+        box-shadow: 0 10px 10px rgba(0,0,0,0.1);
+      }
+      .nav-links.active { right: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="container" style="width: 100%;">
+    <nav>
+      <a href="index.html" class="logo">USAMBARA.KG</a>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Главная</a></li>
+        <li><a href="catalog.html" style="color: var(--primary-color);">Каталог</a></li>
+        <li><a href="index.html#contacts">Контакты</a></li>
+        <li><a href="reviews.html">Отзывы</a></li>
+        <li><a href="login.html"><i class="fa-solid fa-user-gear"></i> Войти</a></li>
+        <li>
+          <a href="cart.html" class="cart-link">
+            <i class="fa-solid fa-basket-shopping"></i>
+            <span id="cart-count">0</span>
+          </a>
+        </li>
+      </ul>
+      <div class="burger" id="burger">
+        <i class="fa-solid fa-bars"></i>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<div class="container">
+  <div class="controls-section">
+    <div class="search-container">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" id="searchInput" placeholder="Поиск по названию...">
+    </div>
+
+    <div class="filter-buttons">
+      <button class="filter-btn active" data-cat="all">Все товары</button>
+      <button class="filter-btn" data-cat="flowers">Цветы</button>
+      <button class="filter-btn" data-cat="fertilizers">Удобрения</button>
+      <button class="filter-btn" data-cat="pots">Горшки</button>
+    </div>
+
+    <div id="sub-filters-container">
+      <p style="font-size: 0.9rem; margin-bottom: 5px; color: #888;">Тип растения:</p>
+      <button class="sub-filter-btn active" data-sub="all-flowers">Все</button>
+      <button class="sub-filter-btn" data-sub="baby">Детки</button>
+      <button class="sub-filter-btn" data-sub="adult">Взрослые</button>
+      <button class="sub-filter-btn" data-sub="leaf-cut">Лист срезом</button>
+      <button class="sub-filter-btn" data-sub="leaf-root">Укоренённый лист</button>
+    </div>
+  </div>
+
+  <div class="products-grid" id="grid">
+    <p style="grid-column: 1/-1; text-align:center; padding: 50px;">Загрузка товаров...</p>
+  </div>
+</div>
+
+<footer>
+  <div class="container">
+    <h4>USAMBARA.KG</h4>
+    <p>Бишкек, ул. Исанова 264/2 | +996 553 159 859</p>
+  </div>
+</footer>
+
+<script>
+  // ИСПРАВЛЕНИЕ #2: реальные креды вместо заглушек
+  const supabaseUrl = 'https://nfdrkjisgkhkwkscjpkv.supabase.co';
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5mZHJramlzZ2toa3drc2NqcGt2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MTI0MzcsImV4cCI6MjA5MzI4ODQzN30.Gfg_F7RRrrdGqxKHNqn-CaWZcM9EAqpRWCdtx5fTXt4';
+  const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+  let allProducts = [];
+  let currentCategory = 'all';
+  let currentSubCategory = 'all-flowers';
+
+  async function loadProductsFromCloud() {
+    const { data, error } = await _supabase.from('products').select('*');
+    if (error) {
+      console.error('Ошибка:', error);
+      document.getElementById('grid').innerHTML = '<p style="grid-column:1/-1;text-align:center;padding:50px;color:#999;">Ошибка загрузки данных</p>';
+    } else {
+      allProducts = data;
+      renderProducts();
+    }
+  }
+
+  function renderProducts() {
+    const grid = document.getElementById('grid');
+    const searchText = document.getElementById('searchInput').value.toLowerCase();
+    grid.innerHTML = '';
+
+    const filtered = allProducts.filter(item => {
+      const matchesSearch = item.name.toLowerCase().includes(searchText);
+      const matchesCat = (currentCategory === 'all' || item.category === currentCategory);
+      let matchesSub = true;
+      if (currentCategory === 'flowers' && currentSubCategory !== 'all-flowers') {
+        matchesSub = (item.sub === currentSubCategory);
+      }
+      return matchesSearch && matchesCat && matchesSub;
+    });
+
+    if (filtered.length === 0) {
+      grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; padding: 50px; color: #999;">Товары не найдены</p>';
+      return;
+    }
+
+    // ИСПРАВЛЕНИЕ #7: используем data-атрибуты вместо inline onclick со строками (защита от XSS)
+    filtered.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'product-card';
+
+      const img = document.createElement('img');
+      img.src = item.img;
+      img.className = 'product-img';
+      img.alt = item.name;
+      img.onerror = () => { img.src = 'https://via.placeholder.com/250?text=Нет+фото'; };
+
+      const info = document.createElement('div');
+      info.className = 'product-info';
+
+      const title = document.createElement('h3');
+      title.textContent = item.name;
+
+      const priceEl = document.createElement('span');
+      priceEl.className = 'price';
+      priceEl.textContent = item.price + ' сом';
+
+      const btn = document.createElement('button');
+      btn.className = 'btn-add';
+      btn.textContent = 'В корзину';
+      // Данные хранятся в dataset, не в строках onclick
+      btn.dataset.name = item.name;
+      btn.dataset.price = item.price;
+      btn.dataset.img = item.img;
+      btn.addEventListener('click', handleAddToCart);
+
+      info.appendChild(title);
+      info.appendChild(priceEl);
+      info.appendChild(btn);
+      card.appendChild(img);
+      card.appendChild(info);
+      grid.appendChild(card);
+    });
+  }
+
+  function handleAddToCart(event) {
+    const btn = event.currentTarget;
+    const name = btn.dataset.name;
+    const price = parseInt(btn.dataset.price);
+    const img = btn.dataset.img;
+    addToCart(name, price, img, btn);
+  }
+
+  // Фильтры
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentCategory = btn.dataset.cat;
+      currentSubCategory = 'all-flowers';
+      const subContainer = document.getElementById('sub-filters-container');
+      subContainer.style.display = (currentCategory === 'flowers') ? 'block' : 'none';
+      document.querySelectorAll('.sub-filter-btn').forEach(sb => sb.classList.remove('active'));
+      document.querySelector('[data-sub="all-flowers"]').classList.add('active');
+      renderProducts();
+    });
+  });
+
+  document.querySelectorAll('.sub-filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.sub-filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentSubCategory = btn.dataset.sub;
+      renderProducts();
+    });
+  });
+
+  document.getElementById('searchInput').addEventListener('input', renderProducts);
+
+  function addToCart(name, price, img, btn) {
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const existing = cart.find(i => i.name === name);
+
+    if (existing) existing.count++;
+    else cart.push({ name, price, img, count: 1 });
+
+    localStorage.setItem('cart', JSON.stringify(cart));
+    updateCartCount();
+
+    const originalText = btn.textContent;
+    btn.classList.add('clicked');
+    btn.textContent = 'Добавлено!';
+    setTimeout(() => {
+      btn.classList.remove('clicked');
+      btn.textContent = originalText;
+    }, 800);
+  }
+
+  function updateCartCount() {
+    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const count = cart.reduce((sum, item) => sum + item.count, 0);
+    document.getElementById('cart-count').innerText = count;
+  }
+
+  const burger = document.getElementById('burger');
+  const navLinks = document.getElementById('nav-links');
+  burger.addEventListener('click', () => navLinks.classList.toggle('active'));
+
+  window.onload = () => {
+    // ИСПРАВЛЕНИЕ #3: читаем параметр ?cat= из URL и применяем фильтр
+    const params = new URLSearchParams(window.location.search);
+    const catParam = params.get('cat');
+    if (catParam && ['flowers', 'fertilizers', 'pots'].includes(catParam)) {
+      currentCategory = catParam;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      const activeBtn = document.querySelector(`.filter-btn[data-cat="${catParam}"]`);
+      if (activeBtn) activeBtn.classList.add('active');
+      if (catParam === 'flowers') {
+        document.getElementById('sub-filters-container').style.display = 'block';
+      }
+    }
+
+    loadProductsFromCloud();
+    updateCartCount();
+  };
+</script>
+
+</body>
+</html>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Панель администратора — Usambara.kg</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root { --primary-color: #e91e63; --light-bg: #fdf7f9; --dark-text: #333; }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+    body { background-color: var(--light-bg); padding: 20px; }
+    .admin-container { max-width: 900px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+    .admin-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .back-link { text-decoration: none; color: var(--dark-text); font-weight: 600; transition: 0.3s; }
+    .back-link:hover { color: var(--primary-color); }
+    .logout-btn { background: none; border: none; color: #888; cursor: pointer; font-size: 0.9rem; }
+    .logout-btn:hover { color: var(--primary-color); }
+    h1 { color: var(--primary-color); margin-bottom: 25px; text-align: center; }
+    .product-form { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 40px; background: #f9f9f9; padding: 20px; border-radius: 15px; }
+    .product-form input, .product-form select { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; }
+    .product-form button { grid-column: span 2; background: var(--primary-color); color: #fff; border: none; padding: 15px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+    .product-form button:disabled { background: #ccc; cursor: not-allowed; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+    th { background: var(--light-bg); color: var(--primary-color); }
+    .preview-img { width: 50px; height: 50px; object-fit: cover; border-radius: 5px; }
+    .delete-btn { color: #ff4d4d; cursor: pointer; border: none; background: none; font-size: 1.1rem; }
+    @media (max-width: 600px) { .product-form { grid-template-columns: 1fr; } .product-form button { grid-column: span 1; } }
+  </style>
+</head>
+<body>
+
+<div class="admin-container">
+  <div class="admin-nav">
+    <a href="index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> На главную</a>
+    <button onclick="logout()" class="logout-btn">Выйти <i class="fa-solid fa-right-from-bracket"></i></button>
+  </div>
+  
+  <h1>Управление товарами (Cloud)</h1>
+
+  <form class="product-form" id="add-form">
+    <input type="text" id="name" placeholder="Название товара" required>
+    <input type="number" id="price" placeholder="Цена (сом)" required>
+    <input type="text" id="img" placeholder="Ссылка на фото (URL)" required>
+    <select id="category" onchange="toggleSubGroup()" required>
+      <option value="flowers">Цветы</option>
+      <option value="fertilizers">Удобрения</option>
+      <option value="pots">Горшки</option>
+    </select>
+    <select id="subgroup">
+      <option value="">Без подгруппы</option>
+      <option value="baby">Детка</option>
+      <option value="adult">Взрослое растение</option>
+      <option value="leaf-cut">Лист срезом</option>
+      <option value="leaf-root">Укоренённый лист</option>
+    </select>
+    <button type="submit" id="submit-btn"><i class="fa-solid fa-plus"></i> Добавить товар</button>
+  </form>
+
+  <table id="admin-table">
+    <thead>
+      <tr>
+        <th>Фото</th>
+        <th>Название</th>
+        <th>Категория</th>
+        <th>Цена</th>
+        <th>Действие</th>
+      </tr>
+    </thead>
+    <tbody id="product-list"></tbody>
+  </table>
+</div>
+
+<script>
+  // ИСПРАВЛЕНИЕ #1: ключ на одной строке без переноса
+  const supabaseUrl = 'https://nfdrkjisgkhkwkscjpkv.supabase.co';
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5mZHJramlzZ2toa3drc2NqcGt2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MTI0MzcsImV4cCI6MjA5MzI4ODQzN30.Gfg_F7RRrrdGqxKHNqn-CaWZcM9EAqpRWCdtx5fTXt4';
+  const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+  // Проверка авторизации
+  if (localStorage.getItem('isAdmin') !== 'true') {
+    window.location.href = 'login.html';
+  }
+
+  function logout() {
+    localStorage.removeItem('isAdmin');
+    window.location.href = 'index.html';
+  }
+
+  let products = [];
+
+  function toggleSubGroup() {
+    const cat = document.getElementById('category').value;
+    document.getElementById('subgroup').style.display = (cat === 'flowers') ? 'block' : 'none';
+  }
+
+  async function loadProducts() {
+    const { data, error } = await _supabase
+      .from('products')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Ошибка загрузки:', error);
+    } else {
+      products = data;
+      renderAdminTable();
+    }
+  }
+
+  document.getElementById('add-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+
+    const newProduct = {
+      name: document.getElementById('name').value.trim(),
+      price: parseInt(document.getElementById('price').value),
+      img: document.getElementById('img').value.trim(),
+      category: document.getElementById('category').value,
+      sub: document.getElementById('subgroup').value
+    };
+
+    const { error } = await _supabase.from('products').insert([newProduct]);
+
+    if (error) {
+      alert('Ошибка сохранения: ' + error.message);
+    } else {
+      e.target.reset();
+      toggleSubGroup();
+      await loadProducts();
+    }
+    btn.disabled = false;
+  });
+
+  function renderAdminTable() {
+    const list = document.getElementById('product-list');
+    list.innerHTML = products.map(item => `
+      <tr>
+        <td><img src="${item.img}" class="preview-img" onerror="this.src='https://via.placeholder.com/50?text=?'"></td>
+        <td>${item.name}${item.sub ? ' (' + item.sub + ')' : ''}</td>
+        <td>${item.category}</td>
+        <td>${item.price} сом</td>
+        <td>
+          <button class="delete-btn" onclick="deleteProduct(${item.id})">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </td>
+      </tr>`).join('');
+  }
+
+  async function deleteProduct(id) {
+    if (confirm('Удалить товар навсегда?')) {
+      const { error } = await _supabase.from('products').delete().eq('id', id);
+      if (error) {
+        alert('Ошибка удаления: ' + error.message);
+      } else {
+        await loadProducts();
+      }
+    }
+  }
+
+  toggleSubGroup();
+  loadProducts();
+</script>
+
+</body>
+</html>

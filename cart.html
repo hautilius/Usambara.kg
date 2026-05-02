@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Корзина — Usambara.kg</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #e91e63;
+      --light-bg: #fdf7f9;
+      --dark-text: #333;
+      --whatsapp-color: #25d366;
+      --telegram-color: #0088cc;
+      --instagram-color: #e1306c;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+    body { background-color: var(--light-bg); color: var(--dark-text); padding: 20px; }
+
+    .cart-container {
+      max-width: 800px;
+      margin: 30px auto;
+      background: #fff;
+      padding: 25px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    }
+
+    h1 { margin-bottom: 25px; text-align: center; color: var(--primary-color); }
+
+    .cart-item {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      border-bottom: 1px solid #eee;
+      padding: 15px 0;
+    }
+
+    .cart-item img { width: 80px; height: 80px; object-fit: cover; border-radius: 12px; }
+    .item-info { flex-grow: 1; }
+    .item-info h4 { font-size: 1.1rem; margin-bottom: 5px; }
+
+    .quantity-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #f8f8f8;
+      padding: 5px 10px;
+      border-radius: 25px;
+      width: fit-content;
+    }
+    .qty-btn {
+      background: none; border: none; color: var(--primary-color);
+      font-size: 1.2rem; cursor: pointer; width: 30px; font-weight: bold;
+    }
+    .qty-number { font-weight: bold; min-width: 20px; text-align: center; }
+
+    .item-price { font-weight: bold; color: var(--primary-color); min-width: 80px; text-align: right; }
+    .remove-btn { color: #ccc; cursor: pointer; transition: 0.3s; margin-left: 10px; }
+    .remove-btn:hover { color: #ff4d4d; }
+
+    .total-section {
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 2px solid var(--light-bg);
+      text-align: right;
+    }
+    .total-price { font-size: 1.8rem; font-weight: 800; color: var(--primary-color); }
+
+    .order-methods { margin-top: 25px; display: flex; flex-direction: column; gap: 12px; }
+
+    .btn-order {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      color: #fff;
+      text-align: center;
+      padding: 15px;
+      text-decoration: none;
+      border-radius: 50px;
+      font-weight: bold;
+      font-size: 1rem;
+      transition: 0.3s;
+    }
+    .btn-order:hover { transform: translateY(-2px); opacity: 0.9; }
+
+    .btn-whatsapp { background: var(--whatsapp-color); }
+    .btn-telegram { background: var(--telegram-color); }
+    .btn-instagram { background: var(--instagram-color); }
+
+    .back-to-shop { display: block; text-align: center; margin-top: 20px; color: #888; text-decoration: none; }
+    .back-to-shop:hover { color: var(--primary-color); }
+
+    @media (max-width: 500px) {
+      .cart-item { flex-wrap: wrap; }
+      .item-price { width: 100%; text-align: left; margin-top: 10px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="cart-container">
+  <h1>Ваша корзина</h1>
+
+  <div id="cart-items"></div>
+
+  <div class="total-section">
+    <p>Итого к оплате:</p>
+    <div class="total-price"><span id="total-sum">0</span> сом</div>
+  </div>
+
+  <div class="order-methods" id="order-buttons">
+    <p style="text-align: center; font-weight: 600; color: #777;">Выберите способ заказа:</p>
+
+    <a href="#" id="send-whatsapp" class="btn-order btn-whatsapp">
+      <i class="fa-brands fa-whatsapp"></i> Оформить через WhatsApp
+    </a>
+
+    <a href="#" id="send-telegram" class="btn-order btn-telegram">
+      <i class="fa-brands fa-telegram"></i> Оформить через Telegram
+    </a>
+
+    <a href="https://www.instagram.com/usambara.kg/" target="_blank" id="send-instagram" class="btn-order btn-instagram">
+      <i class="fa-brands fa-instagram"></i> Оформить через Instagram
+    </a>
+  </div>
+
+  <a href="catalog.html" class="back-to-shop">
+    <i class="fa-solid fa-arrow-left"></i> Вернуться к выбору сортов
+  </a>
+</div>
+
+<script>
+  function renderCart() {
+    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const container = document.getElementById('cart-items');
+    let total = 0;
+
+    container.innerHTML = '';
+
+    if (cart.length === 0) {
+      container.innerHTML = `
+        <div style="text-align:center; padding: 40px 0;">
+          <i class="fa-solid fa-basket-shopping" style="font-size: 4rem; color: #eee; margin-bottom: 15px;"></i>
+          <p style="color: #999;">В корзине пока ничего нет</p>
+        </div>
+      `;
+      document.getElementById('total-sum').innerText = 0;
+      document.getElementById('order-buttons').style.display = 'none';
+      return;
+    }
+
+    document.getElementById('order-buttons').style.display = 'flex';
+
+    cart.forEach((item, index) => {
+      const itemTotal = item.price * item.count;
+      total += itemTotal;
+
+      const row = document.createElement('div');
+      row.className = 'cart-item';
+
+      // Используем createElement чтобы избежать XSS из данных корзины
+      const img = document.createElement('img');
+      img.src = item.img;
+      img.alt = item.name;
+
+      const info = document.createElement('div');
+      info.className = 'item-info';
+
+      const title = document.createElement('h4');
+      title.textContent = item.name;
+
+      const qtyControls = document.createElement('div');
+      qtyControls.className = 'quantity-controls';
+      qtyControls.innerHTML = `
+        <button class="qty-btn" data-index="${index}" data-delta="-1">-</button>
+        <span class="qty-number">${item.count}</span>
+        <button class="qty-btn" data-index="${index}" data-delta="1">+</button>
+      `;
+
+      info.appendChild(title);
+      info.appendChild(qtyControls);
+
+      const price = document.createElement('div');
+      price.className = 'item-price';
+      price.textContent = itemTotal + ' сом';
+
+      const removeBtn = document.createElement('i');
+      removeBtn.className = 'fa-solid fa-trash-can remove-btn';
+      removeBtn.dataset.index = index;
+
+      row.appendChild(img);
+      row.appendChild(info);
+      row.appendChild(price);
+      row.appendChild(removeBtn);
+      container.appendChild(row);
+    });
+
+    // Делегируем события через контейнер
+    container.querySelectorAll('.qty-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        changeQty(parseInt(btn.dataset.index), parseInt(btn.dataset.delta));
+      });
+    });
+    container.querySelectorAll('.remove-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        removeItem(parseInt(btn.dataset.index));
+      });
+    });
+
+    document.getElementById('total-sum').innerText = total.toLocaleString();
+    updateOrderLinks(cart, total);
+  }
+
+  function changeQty(index, delta) {
+    let cart = JSON.parse(localStorage.getItem('cart'));
+    cart[index].count += delta;
+    if (cart[index].count < 1) {
+      removeItem(index);
+    } else {
+      localStorage.setItem('cart', JSON.stringify(cart));
+      renderCart();
+    }
+  }
+
+  function removeItem(index) {
+    let cart = JSON.parse(localStorage.getItem('cart'));
+    cart.splice(index, 1);
+    localStorage.setItem('cart', JSON.stringify(cart));
+    renderCart();
+  }
+
+  function updateOrderLinks(cart, total) {
+    let message = 'Здравствуйте! Хочу заказать:\n\n';
+    cart.forEach((item, i) => {
+      message += `${i + 1}. ${item.name} — ${item.count} шт. (${item.price * item.count} сом)\n`;
+    });
+    message += `\nИтого: ${total} сом`;
+
+    const encodedMessage = encodeURIComponent(message);
+
+    // WhatsApp
+    document.getElementById('send-whatsapp').href = `https://wa.me/996553159859?text=${encodedMessage}`;
+
+    // ИСПРАВЛЕНИЕ #6: корректная ссылка Telegram — только текст без фиктивного url=
+    document.getElementById('send-telegram').href = `https://t.me/share/url?text=${encodedMessage}`;
+
+    // Instagram — прямой переход в Direct невозможен, ведём на профиль
+    document.getElementById('send-instagram').href = 'https://www.instagram.com/usambara.kg/';
+  }
+
+  renderCart();
+</script>
+
+</body>
+</html>
