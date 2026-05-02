@@ -73,18 +73,39 @@
 </div>
 
 <script>
-  // ИСПРАВЛЕНИЕ #1: ключ на одной строке без переноса
   const supabaseUrl = 'https://nfdrkjisgkhkwkscjpkv.supabase.co';
   const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5mZHJramlzZ2toa3drc2NqcGt2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MTI0MzcsImV4cCI6MjA5MzI4ODQzN30.Gfg_F7RRrrdGqxKHNqn-CaWZcM9EAqpRWCdtx5fTXt4';
   const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-  // Проверка авторизации
-  if (localStorage.getItem('isAdmin') !== 'true') {
-    window.location.href = 'login.html';
+  // ИСПРАВЛЕНИЕ СЕССИИ: проверяем и isAdmin, и срок действия (30 дней)
+  const SESSION_DURATION_MS = 30 * 24 * 60 * 60 * 1000; // 30 дней в миллисекундах
+
+  function checkSession() {
+    const isAdmin = localStorage.getItem('isAdmin');
+    const loginTime = parseInt(localStorage.getItem('adminLoginTime') || '0');
+    const now = Date.now();
+
+    if (isAdmin !== 'true' || (now - loginTime) > SESSION_DURATION_MS) {
+      // Сессия истекла или не существует — очищаем и редиректим
+      localStorage.removeItem('isAdmin');
+      localStorage.removeItem('adminLoginTime');
+      window.location.href = 'login.html';
+      return false;
+    }
+
+    // Обновляем время последней активности (продлеваем сессию)
+    localStorage.setItem('adminLoginTime', now.toString());
+    return true;
+  }
+
+  // Проверяем сессию при загрузке
+  if (!checkSession()) {
+    throw new Error('Not authenticated');
   }
 
   function logout() {
     localStorage.removeItem('isAdmin');
+    localStorage.removeItem('adminLoginTime');
     window.location.href = 'index.html';
   }
 
