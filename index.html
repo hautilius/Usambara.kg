@@ -102,12 +102,18 @@
       color: var(--primary-color);
     }
 
-    /* HERO */
+    /* HERO — ИСПРАВЛЕНИЕ: fallback-цвет + более тёмный оверлей */
     .hero {
       height: 70vh;
-      background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)),
-                  url('https://i.postimg.cc/90q1w2Qj/fialka-komnatnaya-960.jpg') no-repeat center center/cover;
-}
+      /* Тёмно-розовый fallback если изображение не загружается */
+      background-color: #7b1f45;
+      background-image:
+        linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)),
+        url('https://images.unsplash.com/photo-1462275646964-a0e3386b89fa?w=1400&auto=format&fit=crop');
+      background-repeat: no-repeat;
+      background-position: center center;
+      background-size: cover;
+      display: flex;
       align-items: center;
       justify-content: center;
       text-align: center;
@@ -115,11 +121,25 @@
       margin-top: 70px;
     }
 
+    .hero-content {
+      padding: 20px;
+    }
+
     .hero h1 {
       font-size: clamp(2.5rem, 8vw, 4rem);
-      margin-bottom: 10px;
+      margin-bottom: 15px;
       text-transform: uppercase;
       font-weight: 800;
+      color: #ffffff;
+      text-shadow: 0 2px 20px rgba(0,0,0,0.5);
+      letter-spacing: 2px;
+    }
+
+    .hero p {
+      font-size: clamp(1rem, 2.5vw, 1.3rem);
+      color: #ffffff;
+      text-shadow: 0 1px 10px rgba(0,0,0,0.5);
+      font-weight: 400;
     }
 
     /* КАТЕГОРИИ АССОРТИМЕНТА */
@@ -223,20 +243,20 @@
 </header>
 
 <div class="hero">
-  <div class="container">
+  <div class="hero-content">
     <h1>USAMBARA.KG</h1>
     <p>Цветущее украшение вашего дома!</p>
   </div>
 </div>
 
-<!-- ИСПРАВЛЕНИЕ #4: добавлен закрывающий </div> для .container внутри секции -->
 <section class="catalog-section">
   <div class="container">
     <h2 class="section-title">Наш ассортимент</h2>
 
     <div class="categories-grid">
       <a href="catalog.html?cat=flowers" class="category-card">
-        <img src="https://www.ufl.ua/images/content/vidy_fialok1.jpg" class="category-img" alt="Цветы">
+        <img src="https://www.ufl.ua/images/content/vidy_fialok1.jpg" class="category-img" alt="Цветы"
+             onerror="this.src='https://images.unsplash.com/photo-1490750967868-88df5691cc8a?w=600&auto=format&fit=crop'">
         <div class="category-overlay">
           <h3>Цветы</h3>
           <p>Коллекционные сорта фиалок</p>
@@ -244,7 +264,8 @@
       </a>
 
       <a href="catalog.html?cat=fertilizers" class="category-card">
-        <img src="https://i.ytimg.com/vi/hIiqGe8Dg5o/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLDnVip6gAgJ8AkuUyz82FKbiDnfxw" class="category-img" alt="Удобрения">
+        <img src="https://i.ytimg.com/vi/hIiqGe8Dg5o/hq720.jpg" class="category-img" alt="Удобрения"
+             onerror="this.src='https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=600&auto=format&fit=crop'">
         <div class="category-overlay">
           <h3>Удобрения</h3>
           <p>Для здорового роста и цветения</p>
@@ -252,14 +273,15 @@
       </a>
 
       <a href="catalog.html?cat=pots" class="category-card">
-        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQMt3_v9bf9FgbzcYncFTMniWfMAEgHQggt6Q&s" class="category-img" alt="Горшки">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQMt3_v9bf9FgbzcYncFTMniWfMAEgHQggt6Q&s" class="category-img" alt="Горшки"
+             onerror="this.src='https://images.unsplash.com/photo-1459156212016-c812468e2115?w=600&auto=format&fit=crop'">
         <div class="category-overlay">
           <h3>Горшки</h3>
           <p>Стильные емкости для посадки</p>
         </div>
       </a>
     </div>
-  </div><!-- конец .container -->
+  </div>
 </section>
 
 <section class="services-section" id="why-us">
