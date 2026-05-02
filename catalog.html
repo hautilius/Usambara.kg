@@ -61,14 +61,114 @@
     }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
+    /* ─── PRODUCT GRID ─── */
     .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px; }
-    .product-card { background: #fff; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.05); transition: 0.3s; }
+    .product-card {
+      background: #fff; border-radius: 15px; overflow: hidden;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05); transition: 0.3s;
+    }
     .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(233,30,99,0.15); }
-    .product-img { width: 100%; height: 250px; object-fit: cover; background: #eee; }
+
+    /* ─── IMAGE CAROUSEL ─── */
+    .card-img-wrapper {
+      position: relative; width: 100%; height: 250px; overflow: hidden; background: #eee;
+    }
+
+    .carousel-track {
+      display: flex; height: 100%;
+      transition: transform 0.35s cubic-bezier(.4,0,.2,1);
+    }
+
+    .carousel-slide {
+      min-width: 100%; height: 100%;
+    }
+    .carousel-slide img {
+      width: 100%; height: 100%; object-fit: cover;
+      display: block;
+    }
+
+    /* Prev / Next arrows — visible only on multi-photo cards */
+    .carousel-btn {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      background: rgba(255,255,255,0.85); border: none; border-radius: 50%;
+      width: 32px; height: 32px; cursor: pointer; font-size: 0.85rem;
+      color: var(--dark-text); z-index: 5;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity 0.2s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    .card-img-wrapper:hover .carousel-btn { opacity: 1; }
+    .carousel-btn.prev { left: 8px; }
+    .carousel-btn.next { right: 8px; }
+
+    /* Dot indicators */
+    .carousel-dots {
+      position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+      display: flex; gap: 5px; z-index: 5;
+    }
+    .dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: rgba(255,255,255,0.6); transition: 0.2s; cursor: pointer;
+    }
+    .dot.active { background: #fff; transform: scale(1.2); }
+
+    /* Photo count badge */
+    .photo-count-badge {
+      position: absolute; top: 8px; right: 8px;
+      background: rgba(0,0,0,0.5); color: #fff;
+      font-size: 0.75rem; padding: 3px 8px; border-radius: 20px; z-index: 5;
+    }
+
+    /* ─── CARD INFO ─── */
     .product-info { padding: 20px; text-align: center; }
     .price { display: block; font-size: 1.4rem; color: var(--primary-color); font-weight: bold; margin: 10px 0; }
-    .btn-add { width: 100%; background: var(--primary-color); color: #fff; border: none; padding: 12px; border-radius: 50px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+    .btn-add {
+      width: 100%; background: var(--primary-color); color: #fff;
+      border: none; padding: 12px; border-radius: 50px;
+      cursor: pointer; font-weight: bold; transition: 0.3s;
+    }
     .btn-add.clicked { background-color: #4caf50; transform: scale(0.95); }
+
+    /* ─── LIGHTBOX ─── */
+    .lightbox-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.88); z-index: 2000;
+      align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .lightbox-overlay.open { display: flex; }
+
+    .lightbox {
+      position: relative; max-width: 700px; width: 100%;
+      border-radius: 16px; overflow: hidden;
+    }
+    .lightbox img {
+      width: 100%; max-height: 80vh; object-fit: contain;
+      display: block; background: #111;
+    }
+    .lightbox-close {
+      position: absolute; top: 10px; right: 12px;
+      background: rgba(0,0,0,0.6); color: #fff; border: none;
+      border-radius: 50%; width: 34px; height: 34px;
+      font-size: 1rem; cursor: pointer; z-index: 5;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .lightbox-nav {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      background: rgba(255,255,255,0.15); color: #fff; border: none;
+      border-radius: 50%; width: 40px; height: 40px;
+      font-size: 1rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: 0.2s;
+    }
+    .lightbox-nav:hover { background: rgba(255,255,255,0.3); }
+    .lightbox-nav.prev { left: 10px; }
+    .lightbox-nav.next { right: 10px; }
+    .lightbox-counter {
+      position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,0.5); color: #fff; font-size: 0.85rem;
+      padding: 4px 12px; border-radius: 20px;
+    }
 
     footer { background: #333; color: #fff; padding: 60px 0 20px; margin-top: 60px; text-align: center; }
 
@@ -82,6 +182,7 @@
         box-shadow: 0 10px 10px rgba(0,0,0,0.1);
       }
       .nav-links.active { right: 0; }
+      .carousel-btn { opacity: 1 !important; }
     }
   </style>
 </head>
@@ -147,27 +248,53 @@
   </div>
 </footer>
 
+<!-- ─── LIGHTBOX ─── -->
+<div class="lightbox-overlay" id="lightbox-overlay">
+  <div class="lightbox" id="lightbox">
+    <button class="lightbox-close" onclick="closeLightbox()"><i class="fa-solid fa-xmark"></i></button>
+    <img id="lightbox-img" src="" alt="">
+    <button class="lightbox-nav prev" id="lb-prev" onclick="lightboxNav(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+    <button class="lightbox-nav next" id="lb-next" onclick="lightboxNav(1)"><i class="fa-solid fa-chevron-right"></i></button>
+    <span class="lightbox-counter" id="lb-counter">1 / 1</span>
+  </div>
+</div>
+
 <script>
-  // ИСПРАВЛЕНИЕ #2: реальные креды вместо заглушек
-  const supabaseUrl = 'https://nfdrkjisgkhkwkscjpkv.supabase.co';
-  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5mZHJramlzZ2toa3drc2NqcGt2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MTI0MzcsImV4cCI6MjA5MzI4ODQzN30.Gfg_F7RRrrdGqxKHNqn-CaWZcM9EAqpRWCdtx5fTXt4';
-  const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+  const supabaseUrl  = 'https://nfdrkjisgkhkwkscjpkv.supabase.co';
+  const supabaseKey  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5mZHJramlzZ2toa3drc2NqcGt2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MTI0MzcsImV4cCI6MjA5MzI4ODQzN30.Gfg_F7RRrrdGqxKHNqn-CaWZcM9EAqpRWCdtx5fTXt4';
+  const _supabase    = supabase.createClient(supabaseUrl, supabaseKey);
 
   let allProducts = [];
-  let currentCategory = 'all';
+  let currentCategory    = 'all';
   let currentSubCategory = 'all-flowers';
 
+  /* ─── Parse image field → array ─── */
+  function parseImgs(raw) {
+    if (!raw) return [];
+    if (typeof raw === 'string') {
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed.filter(Boolean);
+      } catch {}
+      return [raw];
+    }
+    if (Array.isArray(raw)) return raw.filter(Boolean);
+    return [];
+  }
+
+  /* ─── LOAD ─── */
   async function loadProductsFromCloud() {
     const { data, error } = await _supabase.from('products').select('*');
     if (error) {
-      console.error('Ошибка:', error);
-      document.getElementById('grid').innerHTML = '<p style="grid-column:1/-1;text-align:center;padding:50px;color:#999;">Ошибка загрузки данных</p>';
+      document.getElementById('grid').innerHTML =
+        '<p style="grid-column:1/-1;text-align:center;padding:50px;color:#999;">Ошибка загрузки данных</p>';
     } else {
       allProducts = data;
       renderProducts();
     }
   }
 
+  /* ─── RENDER ─── */
   function renderProducts() {
     const grid = document.getElementById('grid');
     const searchText = document.getElementById('searchInput').value.toLowerCase();
@@ -175,7 +302,7 @@
 
     const filtered = allProducts.filter(item => {
       const matchesSearch = item.name.toLowerCase().includes(searchText);
-      const matchesCat = (currentCategory === 'all' || item.category === currentCategory);
+      const matchesCat    = (currentCategory === 'all' || item.category === currentCategory);
       let matchesSub = true;
       if (currentCategory === 'flowers' && currentSubCategory !== 'all-flowers') {
         matchesSub = (item.sub === currentSubCategory);
@@ -184,21 +311,87 @@
     });
 
     if (filtered.length === 0) {
-      grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; padding: 50px; color: #999;">Товары не найдены</p>';
+      grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;padding:50px;color:#999;">Товары не найдены</p>';
       return;
     }
 
-    // ИСПРАВЛЕНИЕ #7: используем data-атрибуты вместо inline onclick со строками (защита от XSS)
     filtered.forEach(item => {
+      const imgs = parseImgs(item.img);
+      if (imgs.length === 0) imgs.push('');
+
       const card = document.createElement('div');
       card.className = 'product-card';
 
-      const img = document.createElement('img');
-      img.src = item.img;
-      img.className = 'product-img';
-      img.alt = item.name;
-      img.onerror = () => { img.src = 'https://via.placeholder.com/250?text=Нет+фото'; };
+      /* ── image wrapper ── */
+      const wrapper = document.createElement('div');
+      wrapper.className = 'card-img-wrapper';
 
+      /* carousel track */
+      const track = document.createElement('div');
+      track.className = 'carousel-track';
+
+      imgs.forEach((url, idx) => {
+        const slide = document.createElement('div');
+        slide.className = 'carousel-slide';
+        const img = document.createElement('img');
+        img.src   = url || 'https://via.placeholder.com/280x250?text=Нет+фото';
+        img.alt   = item.name;
+        img.onerror = () => { img.src = 'https://via.placeholder.com/280x250?text=Нет+фото'; };
+        // Open lightbox on click
+        img.style.cursor = 'zoom-in';
+        img.addEventListener('click', () => openLightbox(imgs, idx));
+        slide.appendChild(img);
+        track.appendChild(slide);
+      });
+
+      wrapper.appendChild(track);
+
+      /* photo count badge (only if multiple) */
+      if (imgs.length > 1) {
+        const badge = document.createElement('span');
+        badge.className = 'photo-count-badge';
+        badge.innerHTML = `<i class="fa-solid fa-images"></i> ${imgs.length}`;
+        wrapper.appendChild(badge);
+      }
+
+      /* arrows (only if multiple) */
+      if (imgs.length > 1) {
+        const prev = document.createElement('button');
+        prev.className = 'carousel-btn prev';
+        prev.innerHTML = '<i class="fa-solid fa-chevron-left"></i>';
+        prev.setAttribute('aria-label', 'Предыдущее фото');
+
+        const next = document.createElement('button');
+        next.className = 'carousel-btn next';
+        next.innerHTML = '<i class="fa-solid fa-chevron-right"></i>';
+        next.setAttribute('aria-label', 'Следующее фото');
+
+        /* dots */
+        const dotsEl = document.createElement('div');
+        dotsEl.className = 'carousel-dots';
+        imgs.forEach((_, i) => {
+          const dot = document.createElement('span');
+          dot.className = 'dot' + (i === 0 ? ' active' : '');
+          dot.addEventListener('click', () => goTo(i));
+          dotsEl.appendChild(dot);
+        });
+
+        let current = 0;
+        function goTo(idx) {
+          current = (idx + imgs.length) % imgs.length;
+          track.style.transform = `translateX(-${current * 100}%)`;
+          dotsEl.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === current));
+        }
+
+        prev.addEventListener('click', (e) => { e.stopPropagation(); goTo(current - 1); });
+        next.addEventListener('click', (e) => { e.stopPropagation(); goTo(current + 1); });
+
+        wrapper.appendChild(prev);
+        wrapper.appendChild(next);
+        wrapper.appendChild(dotsEl);
+      }
+
+      /* ── product info ── */
       const info = document.createElement('div');
       info.className = 'product-info';
 
@@ -210,37 +403,34 @@
       priceEl.textContent = item.price + ' сом';
 
       const btn = document.createElement('button');
-      btn.className = 'btn-add';
+      btn.className  = 'btn-add';
       btn.textContent = 'В корзину';
-      // Данные хранятся в dataset, не в строках onclick
-      btn.dataset.name = item.name;
+      btn.dataset.name  = item.name;
       btn.dataset.price = item.price;
-      btn.dataset.img = item.img;
+      btn.dataset.img   = imgs[0] || '';
       btn.addEventListener('click', handleAddToCart);
 
       info.appendChild(title);
       info.appendChild(priceEl);
       info.appendChild(btn);
-      card.appendChild(img);
+
+      card.appendChild(wrapper);
       card.appendChild(info);
       grid.appendChild(card);
     });
   }
 
-  function handleAddToCart(event) {
-    const btn = event.currentTarget;
-    const name = btn.dataset.name;
-    const price = parseInt(btn.dataset.price);
-    const img = btn.dataset.img;
-    addToCart(name, price, img, btn);
+  function handleAddToCart(e) {
+    const btn   = e.currentTarget;
+    addToCart(btn.dataset.name, parseInt(btn.dataset.price), btn.dataset.img, btn);
   }
 
-  // Фильтры
+  /* ─── FILTERS ─── */
   document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      currentCategory = btn.dataset.cat;
+      currentCategory    = btn.dataset.cat;
       currentSubCategory = 'all-flowers';
       const subContainer = document.getElementById('sub-filters-container');
       subContainer.style.display = (currentCategory === 'flowers') ? 'block' : 'none';
@@ -261,49 +451,81 @@
 
   document.getElementById('searchInput').addEventListener('input', renderProducts);
 
+  /* ─── CART ─── */
   function addToCart(name, price, img, btn) {
     let cart = JSON.parse(localStorage.getItem('cart')) || [];
     const existing = cart.find(i => i.name === name);
-
     if (existing) existing.count++;
     else cart.push({ name, price, img, count: 1 });
-
     localStorage.setItem('cart', JSON.stringify(cart));
     updateCartCount();
 
-    const originalText = btn.textContent;
+    const orig = btn.textContent;
     btn.classList.add('clicked');
     btn.textContent = 'Добавлено!';
-    setTimeout(() => {
-      btn.classList.remove('clicked');
-      btn.textContent = originalText;
-    }, 800);
+    setTimeout(() => { btn.classList.remove('clicked'); btn.textContent = orig; }, 800);
   }
 
   function updateCartCount() {
-    const cart = JSON.parse(localStorage.getItem('cart')) || [];
-    const count = cart.reduce((sum, item) => sum + item.count, 0);
+    const cart  = JSON.parse(localStorage.getItem('cart')) || [];
+    const count = cart.reduce((s, i) => s + i.count, 0);
     document.getElementById('cart-count').innerText = count;
   }
 
-  const burger = document.getElementById('burger');
-  const navLinks = document.getElementById('nav-links');
-  burger.addEventListener('click', () => navLinks.classList.toggle('active'));
+  /* ─── LIGHTBOX ─── */
+  let lbImgs = [];
+  let lbIdx  = 0;
 
+  function openLightbox(imgs, startIdx) {
+    lbImgs = imgs;
+    lbIdx  = startIdx;
+    renderLightbox();
+    document.getElementById('lightbox-overlay').classList.add('open');
+  }
+
+  function renderLightbox() {
+    document.getElementById('lightbox-img').src = lbImgs[lbIdx] || '';
+    document.getElementById('lb-counter').textContent = `${lbIdx + 1} / ${lbImgs.length}`;
+    document.getElementById('lb-prev').style.display = lbImgs.length > 1 ? 'flex' : 'none';
+    document.getElementById('lb-next').style.display = lbImgs.length > 1 ? 'flex' : 'none';
+  }
+
+  function lightboxNav(dir) {
+    lbIdx = (lbIdx + dir + lbImgs.length) % lbImgs.length;
+    renderLightbox();
+  }
+
+  function closeLightbox() {
+    document.getElementById('lightbox-overlay').classList.remove('open');
+  }
+
+  document.getElementById('lightbox-overlay').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('lightbox-overlay')) closeLightbox();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (!document.getElementById('lightbox-overlay').classList.contains('open')) return;
+    if (e.key === 'ArrowLeft')  lightboxNav(-1);
+    if (e.key === 'ArrowRight') lightboxNav(1);
+    if (e.key === 'Escape')     closeLightbox();
+  });
+
+  /* ─── BURGER ─── */
+  document.getElementById('burger').addEventListener('click', () => {
+    document.getElementById('nav-links').classList.toggle('active');
+  });
+
+  /* ─── INIT ─── */
   window.onload = () => {
-    // ИСПРАВЛЕНИЕ #3: читаем параметр ?cat= из URL и применяем фильтр
-    const params = new URLSearchParams(window.location.search);
+    const params   = new URLSearchParams(window.location.search);
     const catParam = params.get('cat');
     if (catParam && ['flowers', 'fertilizers', 'pots'].includes(catParam)) {
       currentCategory = catParam;
       document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
       const activeBtn = document.querySelector(`.filter-btn[data-cat="${catParam}"]`);
       if (activeBtn) activeBtn.classList.add('active');
-      if (catParam === 'flowers') {
-        document.getElementById('sub-filters-container').style.display = 'block';
-      }
+      if (catParam === 'flowers') document.getElementById('sub-filters-container').style.display = 'block';
     }
-
     loadProductsFromCloud();
     updateCartCount();
   };
