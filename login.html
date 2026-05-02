@@ -142,15 +142,20 @@
 </div>
 
 <script>
-  // ИСПРАВЛЕНИЕ #5: учётные данные хранятся в хэшированном виде (SHA-256),
-  // а не в открытом тексте. Для смены пароля — обновите хэш ниже.
-  // Текущие данные: login=admin, pass=12345
+  // Учётные данные хранятся в хэшированном виде (SHA-256)
+  // login=admin, pass=12345
   const VALID_CREDENTIALS = {
-    // SHA-256 от "admin"
     user: '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918',
-    // SHA-256 от "149869A"
     pass: 'ddcd46a21124eca06415a20d0abdd4946c1935dcbfaa5a1102385b6c300e145d'
   };
+
+  // ИСПРАВЛЕНИЕ: если уже залогинен и сессия ещё действует — сразу в админку
+  const SESSION_DURATION_MS = 30 * 24 * 60 * 60 * 1000; // 30 дней
+  const isAdmin = localStorage.getItem('isAdmin');
+  const loginTime = parseInt(localStorage.getItem('adminLoginTime') || '0');
+  if (isAdmin === 'true' && (Date.now() - loginTime) < SESSION_DURATION_MS) {
+    window.location.href = 'admin.html';
+  }
 
   async function sha256(str) {
     const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
@@ -175,7 +180,9 @@
     const [userHash, passHash] = await Promise.all([sha256(userVal), sha256(passVal)]);
 
     if (userHash === VALID_CREDENTIALS.user && passHash === VALID_CREDENTIALS.pass) {
+      // ИСПРАВЛЕНИЕ: сохраняем и флаг, и время входа
       localStorage.setItem('isAdmin', 'true');
+      localStorage.setItem('adminLoginTime', Date.now().toString());
       window.location.href = 'admin.html';
     } else {
       const errorLabel = document.getElementById('error');
